@@ -30,7 +30,21 @@ unsigned random_page(frame* frames, page* pages, unsigned num_frames, unsigned n
 }
 
 unsigned second_chance(frame* frames, page* pages, unsigned num_frames, unsigned num_pages, unsigned* entrance_order, unsigned* ent_size){
-
+    unsigned current_page;
+    for (unsigned i = 0; i < *ent_size; i++){
+        current_page = entrance_order[i];
+        if(pages[current_page].acessed_recently == true){
+            pages[current_page].acessed_recently == false;
+        }
+        else{
+            remove_and_shift(entrance_order,i,ent_size); //shifta fila
+            return pages[current_page].frame_index;
+        }
+    }
+    // se todos são acessed_recently, remove o primeiro:
+    unsigned first_addres = entrance_order[0];
+    remove_and_shift(entrance_order,0,ent_size);
+    return pages[first_addres].frame_index;
 }
 
 unsigned lru(frame* frames, page* pages, unsigned num_frames, unsigned num_pages, unsigned* entrance_order, unsigned* ent_size){
@@ -46,6 +60,5 @@ unsigned lru(frame* frames, page* pages, unsigned num_frames, unsigned num_pages
     }
     return oldest_index;
 }
-
 
 #endif

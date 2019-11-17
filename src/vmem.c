@@ -105,7 +105,7 @@ void mem_access(vm* v_mem, unsigned address, char rw) {
         v_mem->frame_array[p->frame_index].last_access = v_mem->time;
         v_mem->stats.page_hits++;
     }
-
+    p->acessed_recently = true;
     v_mem->time++;
     if (rw == 'R')
         v_mem->stats.read_accesses++;

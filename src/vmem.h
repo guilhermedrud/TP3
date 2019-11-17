@@ -12,6 +12,7 @@ struct page{
     bool valid;
     bool accessed_once;
     char last_access_mode;
+    bool acessed_recently;
 };
 
 struct frame{
