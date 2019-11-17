@@ -12,11 +12,9 @@ struct vm{
     unsigned page_id_size;
     page_replacement_f replacement_f;
 
-    unsigned page_hits;
-    unsigned page_faults;
-    unsigned memory_accesses;
-    unsigned used_pages;
+    struct vm_stats stats;
     
+    unsigned time;
     unsigned avaliable_frame_index;
 
     unsigned* entrance_order; // ordem de entrada das paginas (usado no fifo e 2a chance)
@@ -56,34 +54,30 @@ vm* create_vm(unsigned page_size, unsigned memory_size, page_replacement_f repla
     new_vm->entrance_order = calloc(new_vm->max_pages, sizeof(page));
     new_vm->entrance_size = 0;
 
-    printf("num_frames %u\n", new_vm->num_frames);
-    printf("page_size %u\n", new_vm->page_size);
-    printf("page_id_size %u\n", new_vm->page_id_size);
-    printf("max_pages %u\n", new_vm->max_pages);
-
     return new_vm;
 }
 
-void mem_access(vm* v_mem, unsigned address, char rw, unsigned time) {
+void mem_access(vm* v_mem, unsigned address, char rw) {
     unsigned page_id = address >> v_mem->page_id_size;
     page* p = &(v_mem->page_array[page_id]);
 
     if (!p->accessed_once){
         p->accessed_once = true;
-        v_mem->used_pages++;
+        v_mem->stats.used_pages++;
     }
 
     if (!p->valid) {
-        v_mem->page_faults++;
+        v_mem->stats.page_faults++;
         v_mem->entrance_order[v_mem->entrance_size] = page_id;
         v_mem->entrance_size++;
         
         // Ainda existem quadros não preenchidos
         if (v_mem->avaliable_frame_index > 0) {
             p->valid = true;
+            p->last_access_mode = rw;
             p->frame_index = v_mem->avaliable_frame_index-1;
             v_mem->frame_array[p->frame_index].referenced_page = page_id;
-            v_mem->frame_array[p->frame_index].last_access = time;
+            v_mem->frame_array[p->frame_index].last_access = v_mem->time;
             
             v_mem->avaliable_frame_index++;
             if (v_mem->avaliable_frame_index >= v_mem->num_frames + 1)
@@ -95,16 +89,28 @@ void mem_access(vm* v_mem, unsigned address, char rw, unsigned time) {
             p->frame_index = v_mem->replacement_f(v_mem->frame_array, v_mem->page_array, 
                                                   v_mem->num_frames, v_mem->max_pages,
                                                   v_mem->entrance_order, &v_mem->entrance_size);
+
+            page* replaced_page = &v_mem->page_array[v_mem->frame_array[p->frame_index].referenced_page];
+            replaced_page->valid = false;
+
+            if (replaced_page->last_access_mode == 'W')
+                v_mem->stats.dirty_pages_written++;
+
             p->valid = true;
+            p->last_access_mode = rw;
             v_mem->frame_array[p->frame_index].referenced_page = page_id;
-            v_mem->frame_array[p->frame_index].last_access = time;
+            v_mem->frame_array[p->frame_index].last_access = v_mem->time;
         }
     } else {
-        v_mem->page_hits++;
-        v_mem->frame_array[p->frame_index].last_access = time;
+        v_mem->frame_array[p->frame_index].last_access = v_mem->time;
+        v_mem->stats.page_hits++;
     }
 
-    v_mem->memory_accesses++;
+    v_mem->time++;
+    if (rw == 'R')
+        v_mem->stats.read_accesses++;
+    else
+        v_mem->stats.write_accesses++;
 }
 
 void delete_vm(vm* v_mem) {
@@ -112,9 +118,6 @@ void delete_vm(vm* v_mem) {
     free(v_mem->page_array);
 }
 
-void get_statistics(vm* v_mem, unsigned* acesses, unsigned* used_pages, unsigned* faults, unsigned* hits) {
-    if (acesses) *acesses = v_mem->memory_accesses;
-    if (faults) *faults = v_mem->page_faults;
-    if (hits) *hits = v_mem->page_hits;
-    if (used_pages) *used_pages = v_mem->used_pages;
+struct vm_stats get_statistics(vm* v_mem) {
+    return v_mem->stats;
 }

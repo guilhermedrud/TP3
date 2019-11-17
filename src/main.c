@@ -20,34 +20,36 @@ int main(int argc,char *argv[]){
     unsigned logical_adress;
     char rw;
     int endereco;
+
     page_replacement_f f;
-    if(strcmp(algorithm,"rand")==0){
+    if(strcmp(algorithm,"random")==0)
          f = random_page;
-    }
-    else if(strcmp(algorithm,"lru")==0){
+    else if(strcmp(algorithm,"lru")==0)
         f = lru;
-    }
-    else if(strcmp(algorithm,"2a")==0){
+    else if(strcmp(algorithm,"2a")==0)
         f = second_chance;
-    }
-    else if(strcmp(algorithm,"fifo")==0){
+    else if(strcmp(algorithm,"fifo")==0)
         f = fifo;
+    else {
+        printf("Error: invalid algorithm (%s)\n", algorithm); exit(1);
     }
-    //page_replacement_f f = random_page; //TODO: Selecionar qual algoritmo usar
+    
     vm* v_mem = create_vm(pagesize,total_memory, f);
 
 
     // Itera sobre entrada
     printf("Executando o simulador...\n");
-    unsigned count = 0;
     while (fscanf(input_file, "%x %c",&logical_adress, &rw)!=EOF) {
         //printf("%x %c\n",logical_adress, rw);
-        count++;
-        mem_access(v_mem, logical_adress, rw, count);
+        mem_access(v_mem, logical_adress, rw);
     }
 
     print_parameters(input, total_memory, pagesize, algorithm);
-    unsigned acesses,used_pages,faults,hits;
-    get_statistics(v_mem, &acesses, &used_pages, &faults, &hits);
-    printf("Acessos: %u\nNum. Paginas usadas: %u\nPage faults: %10u\nPage hits:   %10u\n", acesses, used_pages, faults, hits);
+    struct vm_stats stats = get_statistics(v_mem);
+    printf("Total de leituras a memoria: %8u\n", stats.read_accesses);
+    printf("Total de escritas a memoria: %8u\n", stats.write_accesses);
+    printf("Total de acessos a memoria:  %8u\n",  stats.read_accesses + stats.write_accesses);
+    printf("Total de page faults: %8u\n",  stats.page_faults);
+    printf("Total de page hits:   %8u\n",  stats.page_hits);
+    printf("Total de paginas sujas escritas: %u\n",  stats.dirty_pages_written);
 }
