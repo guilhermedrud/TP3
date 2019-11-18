@@ -40,16 +40,18 @@ int main(int argc,char *argv[]){
     // Itera sobre entrada
     printf("Executando o simulador...\n");
     while (fscanf(input_file, "%x %c",&logical_adress, &rw)!=EOF) {
-        //printf("%x %c\n",logical_adress, rw);
         mem_access(v_mem, logical_adress, rw);
     }
 
     print_parameters(input, total_memory, pagesize, algorithm);
     struct vm_stats stats = get_statistics(v_mem);
-    printf("Total de leituras a memoria: %8u\n", stats.read_accesses);
-    printf("Total de escritas a memoria: %8u\n", stats.write_accesses);
-    printf("Total de acessos a memoria:  %8u\n",  stats.read_accesses + stats.write_accesses);
+    printf("Total de leituras: %8u\n", stats.read_accesses);
+    printf("Total de escritas: %8u\n", stats.write_accesses);
+    printf("Total de acessos:  %8u\n",  stats.read_accesses + stats.write_accesses);
     printf("Total de page faults: %8u\n",  stats.page_faults);
     printf("Total de page hits:   %8u\n",  stats.page_hits);
     printf("Total de paginas sujas escritas: %u\n",  stats.dirty_pages_written);
+
+    delete_vm(v_mem);
+    return 0;
 }

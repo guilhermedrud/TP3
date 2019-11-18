@@ -29,8 +29,8 @@ struct vm_stats{
     unsigned used_pages;
 };
 
-// Recebe o array de frames e páginas, remove um quadro do array de
-// quadros de acordo com uma política e retorna o índice do quadro removido
+// Recebe o array de frames, de páginas e da ordem de entrada das páginas
+// e retorna o índice do quadro a ser removido de acordo com uma política
 typedef unsigned (*page_replacement_f)(frame* frames, page* pages, unsigned num_frames, unsigned num_pages, unsigned* entrance_order, unsigned* ent_size);
 
 vm* create_vm(unsigned page_size, unsigned memory_size, page_replacement_f replacement_f);

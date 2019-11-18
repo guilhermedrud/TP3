@@ -48,7 +48,6 @@ unsigned second_chance(frame* frames, page* pages, unsigned num_frames, unsigned
 }
 
 unsigned lru(frame* frames, page* pages, unsigned num_frames, unsigned num_pages, unsigned* entrance_order, unsigned* ent_size){
-    //unsigned least_used;
     unsigned oldest = frames[0].last_access;
     unsigned oldest_index = 0;
     remove_and_shift(entrance_order,*ent_size-1,ent_size);

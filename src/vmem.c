@@ -17,7 +17,7 @@ struct vm{
     unsigned time;
     unsigned avaliable_frame_index;
 
-    unsigned* entrance_order; // ordem de entrada das paginas (usado no fifo e 2a chance)
+    unsigned* entrance_order; // ordem de entrada das paginas
     unsigned entrance_size; // tamanho de vetor de entradas
 
     frame* frame_array;
@@ -116,6 +116,7 @@ void mem_access(vm* v_mem, unsigned address, char rw) {
 void delete_vm(vm* v_mem) {
     free(v_mem->frame_array);
     free(v_mem->page_array);
+    free(v_mem->entrance_order);
 }
 
 struct vm_stats get_statistics(vm* v_mem) {
